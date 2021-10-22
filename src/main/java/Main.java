@@ -13,6 +13,7 @@ public class Main {
     public static void main(String[] args) {
         startNode = 25;
         endNode = 9;
+        //adjaszenzmatrix
         int[][] graphArray =
                 {   //    0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27
                          {0,1,0,0,0,0,0,1,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //0
@@ -46,6 +47,7 @@ public class Main {
                         //0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27
         };
 
+        //this is just the graph represented as a 2D array. I use this to calculate the f cost of each node
         basicGrid = new String[][]{
                 {"0", "1", "2", "3", "4", "5", "6"},
                 {"7", "x", "8", "9", "10", "11", "12"},
@@ -54,6 +56,7 @@ public class Main {
                 {"21", "22", "23", "24", "25", "26", "27"},
         };
 
+        //add all nodes to the graph and calculate their costs
         for(int i = 0; i< graphArray.length; i++){
             Node node = new Node();
             node.setId(i);
@@ -65,16 +68,17 @@ public class Main {
             graph.addNode(node);
         }
 
+        //add all connectons in the graph
         addConnections(graphArray);
-        //ArrayList<NodeConnection> connections = graph.getAllConnections();
-        //for(int i = 0; i<connections.size();i++){
-        //    Nodeconnection = connections.get(i);
-        //    System.out.println("first node: "+connection.getConnection().getKey().getId() +" second node: "+ connection.getConnection().getValue().getId());
-        //}
+
+
         calculateShortestPath();
 
     }
 
+    /*
+    This method adds the connections between the nodes
+     */
     public static void addConnections(int[][] graphArray){
         for(int i = 0; i<graphArray.length; i++){
             for(int j = 0; j<graphArray.length; j++){
@@ -84,7 +88,6 @@ public class Main {
                     graph.addConnection(connection);
                 }
             }
-
         }
     }
 
@@ -93,6 +96,7 @@ public class Main {
         Node endNode = graph.findNode(9);
         Node currentNode = startNode;
 
+        //mainloop
         while(!currentNode.equals(endNode)){
             System.out.println("id: "+currentNode.getId());
             System.out.println("gCost: "+currentNode.getgCost());
