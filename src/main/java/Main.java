@@ -1,19 +1,35 @@
 import java.util.ArrayList;
 import java.util.Random;
 
+/**
+ * This class contains the A* Algorithm and does all it's steps. It uses the Graph class and the Node class.
+ * The first part of the class is some initializing stuff like the adjacency matrix and or start and endnodes.
+ * The second part of the class is the algorithm itself and some helper methods like calculating the distance between two nodes.
+ * @author Severin Goddon
+ */
 public class Main {
 
     private static MyGraph graph = new MyGraph();
+    private static Node startNode;//this is the start node of path
+    private static Node endNode; //this is the end node of path
     private static ArrayList<Node> alreadyVisitedNodes = new ArrayList<>();
-    private static int startNode;
-    private static int endNode;
     private static String[][] basicGrid;
     private static ArrayList<Node> connectedNodes = new ArrayList<>();
 
+    private static ArrayList<Node> openNodes = new ArrayList<>(); //used for a new approach, not in use yet
+    private static ArrayList<Node> closedNodes = new ArrayList<>();  //used for a new approach, not in use yet
+
     public static void main(String[] args) {
-        startNode = 25;
-        endNode = 9;
-        //adjaszenzmatrix
+
+        //create start and endnodes and add them to the graph
+        startNode = new Node();
+        startNode.setId(25);
+        endNode = new Node();
+        endNode.setId(9);
+        graph.addNode(startNode);
+        graph.addNode(endNode);
+
+        //adjacency matrix
         int[][] graphArray =
                 {   //    0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27
                          {0,1,0,0,0,0,0,1,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //0
@@ -47,33 +63,34 @@ public class Main {
                         //0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27
         };
 
-        //this is just the graph represented as a 2D array. I use this to calculate the f cost of each node
+        //this is just the graph represented as a 2D array. I use this to calculate the distances between the nodes
         basicGrid = new String[][]{
-                {"0", "1", "2", "3", "4", "5", "6"},
-                {"7", "x", "8", "9", "10", "11", "12"},
-                {"13", "x", "x", "x", "x", "x", "14"},
-                {"15", "16", "17", "18", "19", "x", "20"},
+                {"0",  "1",  "2",  "3",  "4",  "5",  "6"},
+                {"7",  "x",  "8",  "9",  "10", "11", "12"},
+                {"13", "x",  "x",  "x",  "x",  "x",  "14"},
+                {"15", "16", "17", "18", "19", "x",  "20"},
                 {"21", "22", "23", "24", "25", "26", "27"},
         };
 
+
         //add all nodes to the graph and calculate their costs
         for(int i = 0; i< graphArray.length; i++){
-            Node node = new Node();
-            node.setId(i);
-            int gCost = calculateGcost(node);
-            int hCost = calculateHcost(node);
-            node.setgCost(gCost);
-            node.sethCost(hCost);
-            node.setfCost(gCost+hCost);
-            graph.addNode(node);
+            if(i!=9 && i!=25) { //start and end node have already been added so skip these two nodes with index 9 and 25
+                Node node = new Node();
+                node.setId(i);
+                double gCost = calculateDistanceBetweenNodes(node, startNode);
+                double hCost = calculateDistanceBetweenNodes(node, endNode);
+                node.setgCost(gCost);
+                node.sethCost(hCost);
+                node.setfCost(gCost + hCost);
+                graph.addNode(node);
+            }
         }
 
         //add all connectons in the graph
         addConnections(graphArray);
 
-
         calculateShortestPath();
-
     }
 
     /*
@@ -98,14 +115,30 @@ public class Main {
 
         //mainloop
         while(!currentNode.equals(endNode)){
-            System.out.println("id: "+currentNode.getId());
-            System.out.println("gCost: "+currentNode.getgCost());
-            System.out.println("hCost: "+currentNode.gethCost());
+            System.out.println(currentNode.getId());
+            System.out.println(currentNode.getfCost());
             System.out.println(" ");
             alreadyVisitedNodes.add(currentNode);
             currentNode = findNextNode(currentNode);
         }
         System.out.println(currentNode.getId());
+    }
+
+    /*
+    This Method is in development and is a new try. It's not in use yet
+     */
+    public static void calculateShortestPathNew(){
+        Node currentNode = startNode;
+        Node endNode = graph.findNode(9);
+        openNodes.add(currentNode);
+
+        while (!(currentNode.equals(endNode))){
+            ArrayList<Node> neighbours;
+            neighbours = graph.getConnectedNodes(currentNode);
+            for (Node neighbour:neighbours) {
+                
+            }
+        }
     }
 
     public static Node findNextNode(Node currentNode){
@@ -134,58 +167,39 @@ public class Main {
         return nextNode;
     }
 
+    /*
+    This Method is in development and is a new try. It's not in use yet
+     */
+    public static Node findNextNodeNew(Node currentNode){
+        return null;
+    }
 
-    public static int calculateGcost(Node node){
-        String id = Integer.toString(node.getId());
-        String idFromStartNode = Integer.toString(startNode);
-        int rowOfcurrentNode = 0;
-        int columnOfCurrentNode = 0;
-        int rowOfStartNode = 0;
-        int columnOfStartNode = 0;
+    /*
+    This Method calculates the distance between two nodes in the graph. It uses the diagonal distance as metric (pythagoras)
+     */
+    public static double calculateDistanceBetweenNodes(Node firstNode, Node secondNode){
+        String idOfFirstNode = Integer.toString(firstNode.getId());
+        String idOfSecondNode = Integer.toString(secondNode.getId());
+        int rowOfFirstNode = 0;
+        int columnOfFirstNode = 0;
+        int rowOfSecondNode = 0;
+        int columnOfSecondNode = 0;
         for(int i = 0; i< basicGrid.length; i++){
             for(int j = 0; j< basicGrid[0].length; j++){
-                if(basicGrid[i][j].equals(id)){
-                    rowOfcurrentNode = i;
-                    columnOfCurrentNode = j;
+                if(basicGrid[i][j].equals(idOfFirstNode)){
+                    rowOfFirstNode = i;
+                    columnOfFirstNode = j;
                 }
-                if(basicGrid[i][j].equals(idFromStartNode)){
-                    rowOfStartNode = i;
-                    columnOfStartNode = j;
+                if(basicGrid[i][j].equals(idOfSecondNode)){
+                    rowOfSecondNode = i;
+                    columnOfSecondNode = j;
                 }
             }
         }
-        int differenceBetweenRows = rowOfStartNode-rowOfcurrentNode;
-        if(differenceBetweenRows<0) differenceBetweenRows = differenceBetweenRows*-1;
-        int differenceBetweenColumns = columnOfStartNode-columnOfCurrentNode;
+        int differenceBetweenRows = rowOfFirstNode-rowOfSecondNode;
+        if(differenceBetweenRows<0) differenceBetweenRows = differenceBetweenRows*-1; //if difference is negative, make it positive
+        int differenceBetweenColumns = columnOfFirstNode-columnOfSecondNode;
         if(differenceBetweenColumns<0) differenceBetweenColumns = differenceBetweenColumns*-1;
-
-        return (differenceBetweenColumns+differenceBetweenRows)*10;
+        return(Math.sqrt((differenceBetweenColumns*differenceBetweenColumns+differenceBetweenRows*differenceBetweenRows))*10);
     }
-    public static int calculateHcost(Node node){
-        String id = Integer.toString(node.getId());
-        String idFromEndNode = Integer.toString(endNode);
-        int rowOfcurrentNode = 0;
-        int columnOfCurrentNode = 0;
-        int rowOfEndNode = 0;
-        int columnOfEndNode = 0;
-        for(int i = 0; i< basicGrid.length; i++){
-            for(int j = 0; j< basicGrid[0].length; j++){
-                if(basicGrid[i][j].equals(id)){
-                    rowOfcurrentNode = i;
-                    columnOfCurrentNode = j;
-                }
-                if(basicGrid[i][j].equals(idFromEndNode)){
-                    rowOfEndNode = i;
-                    columnOfEndNode = j;
-                }
-            }
-        }
-        int differenceBetweenRows = rowOfEndNode-rowOfcurrentNode;
-        if(differenceBetweenRows<0) differenceBetweenRows = differenceBetweenRows*-1;
-        int differenceBetweenColumns = columnOfEndNode-columnOfCurrentNode;
-        if(differenceBetweenColumns<0) differenceBetweenColumns = differenceBetweenColumns*-1;
-
-        return (differenceBetweenColumns+differenceBetweenRows)*10;
-    }
-
 }

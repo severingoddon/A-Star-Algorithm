@@ -1,8 +1,14 @@
+
+/**
+ * This class represents one Node in the Graph. It has some attributes like costs or id's and the basic getter&setter
+ * @author Severin Goddon
+ */
 public class Node {
     private int id;
-    private int gCost;
-    private int hCost;
-    private int fCost;
+    private double gCost;
+    private double hCost;
+    private double fCost;
+    private Node parentNode;
 
     public int getId() {
         return id;
@@ -12,27 +18,40 @@ public class Node {
         this.id = id;
     }
 
-    public int getgCost() {
+    public double getgCost() {
         return gCost;
     }
 
-    public void setgCost(int gCost) {
+    public void setgCost(double gCost) {
         this.gCost = gCost;
     }
 
-    public int gethCost() {
+    public double gethCost() {
         return hCost;
     }
 
-    public void sethCost(int hCost) {
+    public void sethCost(double hCost) {
         this.hCost = hCost;
     }
 
-    public int getfCost() {
+    public double getfCost() {
         return fCost;
     }
 
-    public void setfCost(int fCost) {
+    public void setfCost(double fCost) {
         this.fCost = fCost;
+    }
+
+    /*
+    Not in use yet, only for a new approach
+     */
+    public void setParentNode(Node parentNode){
+        this.parentNode = parentNode;
+    }
+    /*
+       Not in use yet, only for a new approach
+        */
+    public Node getParentNode(){
+        return parentNode;
     }
 }
