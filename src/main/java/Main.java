@@ -1,5 +1,5 @@
 import java.util.ArrayList;
-import java.util.Random;
+import java.util.Arrays;
 
 /**
  * This class contains the A* Algorithm and does all it's steps. It uses the Graph class and the Node class.
@@ -12,22 +12,20 @@ public class Main {
     private static MyGraph graph = new MyGraph();
     private static Node startNode;//this is the start node of path
     private static Node endNode; //this is the end node of path
-    private static ArrayList<Node> alreadyVisitedNodes = new ArrayList<>();
     private static String[][] basicGrid;
-    private static ArrayList<Node> connectedNodes = new ArrayList<>();
-
     private static ArrayList<Node> openNodes = new ArrayList<>(); //used for a new approach, not in use yet
     private static ArrayList<Node> closedNodes = new ArrayList<>();  //used for a new approach, not in use yet
 
     public static void main(String[] args) {
 
-        //create start and endnodes and add them to the graph
-        startNode = new Node();
-        startNode.setId(25);
-        endNode = new Node();
-        endNode.setId(9);
-        graph.addNode(startNode);
-        graph.addNode(endNode);
+        //this is just the graph represented as a 2D array. I use this to calculate the distances between the nodes
+        basicGrid = new String[][]{
+                {"0",  "1",  "2",  "3",  "4",  "5",  "6"},
+                {"7",  "x",  "8",  "9",  "10", "11", "12"},
+                {"13", "x",  "x",  "x",  "x",  "x",  "14"},
+                {"15", "16", "17", "18", "19", "x",  "20"},
+                {"21", "22", "23", "24", "25", "26", "27"},
+        };
 
         //adjacency matrix
         int[][] graphArray =
@@ -63,26 +61,25 @@ public class Main {
                         //0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27
         };
 
-        //this is just the graph represented as a 2D array. I use this to calculate the distances between the nodes
-        basicGrid = new String[][]{
-                {"0",  "1",  "2",  "3",  "4",  "5",  "6"},
-                {"7",  "x",  "8",  "9",  "10", "11", "12"},
-                {"13", "x",  "x",  "x",  "x",  "x",  "14"},
-                {"15", "16", "17", "18", "19", "x",  "20"},
-                {"21", "22", "23", "24", "25", "26", "27"},
-        };
-
+        //create start and endnodes and add them to the graph
+        startNode = new Node();
+        startNode.setId(25);
+        startNode.setgCost(0);
+        endNode = new Node();
+        endNode.setId(9);
+        double hcost = calculateDistanceBetweenNodes(startNode,endNode);
+        startNode.sethCost(hcost);
+        startNode.setfCost(hcost);
+        graph.addNode(startNode);
+        graph.addNode(endNode);
 
         //add all nodes to the graph and calculate their costs
         for(int i = 0; i< graphArray.length; i++){
-            if(i!=9 && i!=25) { //start and end node have already been added so skip these two nodes with index 9 and 25
+            if(i!=startNode.getId() && i!=endNode.getId()) { //start and end node have already been added so skip these two nodes with index 9 and 25
                 Node node = new Node();
                 node.setId(i);
-                double gCost = calculateDistanceBetweenNodes(node, startNode);
                 double hCost = calculateDistanceBetweenNodes(node, endNode);
-                node.setgCost(gCost);
                 node.sethCost(hCost);
-                node.setfCost(gCost + hCost);
                 graph.addNode(node);
             }
         }
@@ -90,6 +87,7 @@ public class Main {
         //add all connectons in the graph
         addConnections(graphArray);
 
+        //do the algorithm
         calculateShortestPath();
     }
 
@@ -108,74 +106,117 @@ public class Main {
         }
     }
 
-    public static void calculateShortestPath(){
-        Node startNode = graph.findNode(25);
-        Node endNode = graph.findNode(9);
-        Node currentNode = startNode;
-
-        //mainloop
-        while(!currentNode.equals(endNode)){
-            System.out.println(currentNode.getId());
-            System.out.println(currentNode.getfCost());
-            System.out.println(" ");
-            alreadyVisitedNodes.add(currentNode);
-            currentNode = findNextNode(currentNode);
-        }
-        System.out.println(currentNode.getId());
-    }
 
     /*
-    This Method is in development and is a new try. It's not in use yet
+    This Method is the algorithm and does everything. It's long but it works very fine
      */
-    public static void calculateShortestPathNew(){
+    public static void calculateShortestPath(){
         Node currentNode = startNode;
         Node endNode = graph.findNode(9);
         openNodes.add(currentNode);
 
-        while (!(currentNode.equals(endNode))){
-            ArrayList<Node> neighbours;
-            neighbours = graph.getConnectedNodes(currentNode);
-            for (Node neighbour:neighbours) {
-                
-            }
-        }
-    }
+        while(!(currentNode.equals(endNode))) {
 
-    public static Node findNextNode(Node currentNode){
-        Node nextNode = null;
-        while (true) {
-            ArrayList<Node> newConnectedNodes;
-            newConnectedNodes = graph.getConnectedNodes(currentNode);
-            for (Node newNode : newConnectedNodes) {
-                if (!connectedNodes.contains(newNode)) {
-                    connectedNodes.add(newNode);
+            //calculate current fcosts in open nodes
+            if (!(closedNodes.size() == 0)) {
+                ArrayList<Node> newOpenNodes = graph.getConnectedNodes(currentNode);
+                newOpenNodes.removeIf(n -> closedNodes.contains(n));
+                for(Node newOpenNode:newOpenNodes){
+                    if(!(openNodes.contains(newOpenNode)&& !(closedNodes.contains(newOpenNode)))){
+                        openNodes.add(newOpenNode);
+                    }
+                }
+
+                for (Node opennode : openNodes) {
+                    ArrayList<Node> connectedNodesOfOpenNode = graph.getConnectedNodes(opennode);
+                    for (Node connectedNode : connectedNodesOfOpenNode) {
+                        if (closedNodes.contains(connectedNode)) {
+                            if (opennode.getParentNode() != null) {
+                                if (connectedNode.getfCost() < opennode.getParentNode().getfCost()) {
+                                    opennode.setParentNode(connectedNode);
+                                    opennode.setgCost(connectedNode.getgCost() + 10);
+                                    opennode.setfCost(opennode.getgCost() + opennode.gethCost());
+                                }
+                            } else {
+                                opennode.setParentNode(connectedNode);
+                                opennode.setgCost(connectedNode.getgCost() + 10);
+                                opennode.setfCost(opennode.getgCost() + opennode.gethCost());
+                            }
+                        }
+                    }
+
+                }
+            } else {
+                closedNodes.add(currentNode);
+            }
+
+            double fcost = 10000000;
+
+            //loop trough the open nodes and find the lowest fcost
+            for (Node openNode:openNodes) {
+                if(openNode.getfCost()<fcost){
+                    fcost = openNode.getfCost();
                 }
             }
-            while (true) {
-                Random rn = new Random();
-                nextNode = connectedNodes.get(rn.nextInt(connectedNodes.size()));
-                if (!(nextNode.equals(currentNode))) break;
-            }
-
-            for (Node node : connectedNodes) {
-                if (node.getfCost() < nextNode.getfCost() && !(alreadyVisitedNodes.contains(node))) {
-                    nextNode = node;
+            ArrayList<Node> nodesWithLowestFcost = new ArrayList<>();
+            //find all open nodes with the lowest fcost and add them to the list
+            for(Node openNode:openNodes){
+                if(openNode.getfCost()==fcost){
+                    nodesWithLowestFcost.add(openNode);
                 }
             }
-            if(!(alreadyVisitedNodes.contains(nextNode)))break;
+
+            double hcost = 1000000;
+            //choose the node with the lowest hcost out of the list of nodes with lowest fcosts
+            for (Node node:nodesWithLowestFcost) {
+                if(node.gethCost()<hcost){
+                    hcost = node.gethCost();
+                    currentNode = node;
+                }
+            }
+            openNodes.remove(currentNode);
+            closedNodes.add(currentNode);
+            System.out.println("Id of current node: "+currentNode.getId());
+            System.out.println("F-Cost of current node: "+currentNode.getfCost());
+            System.out.println("G-Cost of current node: "+currentNode.getgCost());
+            System.out.println("H-Cost of current node: "+currentNode.gethCost());
+            System.out.println("");
+
         }
-        return nextNode;
+
+        //go trough the nodes and their parent nodes to determine the final shortest path
+        ArrayList<Integer> finalPath = new ArrayList<>();
+        Node nextnode = currentNode;
+        while (true){
+            finalPath.add(nextnode.getId());
+            if(nextnode.getParentNode()!=null) {
+                nextnode = nextnode.getParentNode();
+            }
+            else{
+                break;
+            }
+        }
+        int[] path = new int[finalPath.size()];
+
+        int j = 0;
+        for(int i = finalPath.size()-1; i>=0; i--){
+            path[j] = finalPath.get(i);
+            j++;
+        }
+
+        //print out the final path
+        System.out.println("");
+        System.out.println("");
+        System.out.println("******************************************");
+        System.out.println("***   final path is:  *** ");
+        System.out.println("***  "+ Arrays.toString(path) +"  ***");
+        System.out.println("******************************************");
+
     }
 
-    /*
-    This Method is in development and is a new try. It's not in use yet
-     */
-    public static Node findNextNodeNew(Node currentNode){
-        return null;
-    }
 
     /*
-    This Method calculates the distance between two nodes in the graph. It uses the diagonal distance as metric (pythagoras)
+    This Method calculates the distance between two nodes in the graph.
      */
     public static double calculateDistanceBetweenNodes(Node firstNode, Node secondNode){
         String idOfFirstNode = Integer.toString(firstNode.getId());
@@ -200,6 +241,6 @@ public class Main {
         if(differenceBetweenRows<0) differenceBetweenRows = differenceBetweenRows*-1; //if difference is negative, make it positive
         int differenceBetweenColumns = columnOfFirstNode-columnOfSecondNode;
         if(differenceBetweenColumns<0) differenceBetweenColumns = differenceBetweenColumns*-1;
-        return(Math.sqrt((differenceBetweenColumns*differenceBetweenColumns+differenceBetweenRows*differenceBetweenRows))*10);
+        return((differenceBetweenColumns+differenceBetweenRows)*10);
     }
 }

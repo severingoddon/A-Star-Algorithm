@@ -42,15 +42,10 @@ public class Node {
         this.fCost = fCost;
     }
 
-    /*
-    Not in use yet, only for a new approach
-     */
     public void setParentNode(Node parentNode){
         this.parentNode = parentNode;
     }
-    /*
-       Not in use yet, only for a new approach
-        */
+
     public Node getParentNode(){
         return parentNode;
     }

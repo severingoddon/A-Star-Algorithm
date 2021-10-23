@@ -12,10 +12,6 @@ public class MyGraph {
         graphNodes.add(node);
     }
 
-    public ArrayList<Node> getAllNodes(){
-        return graphNodes;
-    }
-
     public Node findNode(int id){
         for (Node n: graphNodes) {
             if(n.getId()==id) return n;
@@ -25,18 +21,6 @@ public class MyGraph {
 
     public void addConnection(NodeConnection connection){
         graphConnections.add(connection);
-    }
-
-    public void deleteConnection(NodeConnection connection){
-        graphConnections.remove(connection);
-    }
-
-    public ArrayList<NodeConnection> getAllConnections(){
-        return graphConnections;
-    }
-
-    public boolean checkIfConnected(NodeConnection connection){
-        return graphConnections.contains(connection);
     }
 
     public ArrayList<Node> getConnectedNodes(Node node){
