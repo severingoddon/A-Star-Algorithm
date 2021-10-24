@@ -15,58 +15,19 @@ public class Main {
     private static String[][] basicGrid;
     private static ArrayList<Node> openNodes = new ArrayList<>(); //used for a new approach, not in use yet
     private static ArrayList<Node> closedNodes = new ArrayList<>();  //used for a new approach, not in use yet
+    private static GraphSource graphSource = new GraphSource();
 
     public static void main(String[] args) {
 
-        //this is just the graph represented as a 2D array. I use this to calculate the distances between the nodes
-        basicGrid = new String[][]{
-                {"0",  "1",  "2",  "3",  "4",  "5",  "6"},
-                {"7",  "x",  "8",  "9",  "10", "11", "12"},
-                {"13", "x",  "x",  "x",  "x",  "x",  "14"},
-                {"15", "16", "17", "18", "19", "x",  "20"},
-                {"21", "22", "23", "24", "25", "26", "27"},
-        };
-
-        //adjacency matrix
-        int[][] graphArray =
-                {   //    0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27
-                         {0,1,0,0,0,0,0,1,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //0
-                         {1,0,1,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //1
-                         {0,1,0,1,0,0,0,0,1,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //2
-                         {0,0,1,0,1,0,0,0,0,1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //3
-                         {0,0,0,1,0,1,0,0,0,0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //4
-                         {0,0,0,0,1,0,1,0,0,0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //5
-                         {0,0,0,0,0,1,0,0,0,0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //6
-                         {1,0,0,0,0,0,0,0,0,0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //7
-                         {0,0,1,0,0,0,0,0,0,1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //8
-                         {0,0,0,1,0,0,0,0,1,0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //9
-                         {0,0,0,0,1,0,0,0,0,1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //10
-                         {0,0,0,0,0,1,0,0,0,0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //11
-                         {0,0,0,0,0,0,1,0,0,0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //12
-                         {0,0,0,0,0,0,0,1,0,0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //13
-                         {0,0,0,0,0,0,0,0,0,0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0}, //14
-                         {0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0}, //15
-                         {0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0}, //16
-                         {0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0}, //17
-                         {0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0}, //18
-                         {0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0}, //19
-                         {0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}, //20
-                         {0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0}, //21
-                         {0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0}, //22
-                         {0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0}, //23
-                         {0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0}, //24
-                         {0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0}, //25
-                         {0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1}, //26
-                         {0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0}, //27
-                        //0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27
-        };
+        basicGrid = graphSource.getBasicGrid();
+        int[][] graphArray = graphSource.getGeneratedAdjacencyMatrix();
 
         //create start and endnodes and add them to the graph
         startNode = new Node();
-        startNode.setId(25);
+        startNode.setId(graphSource.getStartnode());
         startNode.setgCost(0);
         endNode = new Node();
-        endNode.setId(9);
+        endNode.setId(graphSource.getEndnode());
         double hcost = calculateDistanceBetweenNodes(startNode,endNode);
         startNode.sethCost(hcost);
         startNode.setfCost(hcost);
@@ -75,7 +36,7 @@ public class Main {
 
         //add all nodes to the graph and calculate their costs
         for(int i = 0; i< graphArray.length; i++){
-            if(i!=startNode.getId() && i!=endNode.getId()) { //start and end node have already been added so skip these two nodes with index 9 and 25
+            if(i!=startNode.getId() && i!=endNode.getId()) { //start and end node have already been added so skip these two nodes
                 Node node = new Node();
                 node.setId(i);
                 double hCost = calculateDistanceBetweenNodes(node, endNode);
@@ -112,7 +73,7 @@ public class Main {
      */
     public static void calculateShortestPath(){
         Node currentNode = startNode;
-        Node endNode = graph.findNode(9);
+        Node endNode = graph.findNode(graphSource.getEndnode());
         openNodes.add(currentNode);
 
         while(!(currentNode.equals(endNode))) {

@@ -1,10 +1,12 @@
-MapTest.java
- MapTest
 Node.java
  Node
+Arraytest.java
+ Arraytest
 MyGraph.java
  MyGraph
-NodeConnection.java
- NodeConnection
 Main.java
  Main
+NodeConnection.java
+ NodeConnection
+GraphSource.java
+ GraphSource
